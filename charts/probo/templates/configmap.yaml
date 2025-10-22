@@ -36,7 +36,7 @@ data:
       pg:
         addr: "{{ include "probo.postgresql.host" . }}:{{ include "probo.postgresql.port" . }}"
         username: {{ include "probo.postgresql.username" . | quote }}
-        password-from-env: "DB_PASSWORD"
+        password: {{ include "probo.postgresql.password" . | quote }}
         database: {{ include "probo.postgresql.database" . | quote }}
         pool-size: {{ .Values.postgresql.poolSize }}
         {{- if .Values.postgresql.caCertBundle }}

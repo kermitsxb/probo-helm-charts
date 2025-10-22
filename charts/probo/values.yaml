@@ -259,7 +259,7 @@ postgresql:
       memory: "2Gi"
       ephemeral-storage: "50Gi"
   auth:
-    postgresUser: postgres
+    postgresUser: probod
     postgresPassword: probod
     database: probod
 
@@ -279,17 +279,19 @@ s3:
 # MinIO configuration
 # Enable included MinIO for testing/development (NOT for production)
 minio:
+  # -- enabled included Minio operator for s3 resource demo purposes
   enabled: true
-
-  # Bitnami MinIO subchart configuration (used when enabled=true)
-  # See: https://github.com/bitnami/charts/tree/main/bitnami/minio
   mode: standalone
+  persistence:
+    enabled: false
+  resources:
+    requests:
+      memory: 128Mi
   primary:
     enabled: true
   auth:
-    rootUser: "minio-admin"
-    rootPassword: "minio-test-password"  # Change this for testing
-  defaultBuckets: "probod"
+    rootUser: probod
+    rootPassword: probod
 
 # Headless Chrome for PDF generation
 chrome:

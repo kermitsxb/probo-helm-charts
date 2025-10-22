@@ -22,7 +22,7 @@ spec:
             - name: POSTGRES_PASSWORD
               value: {{ .Values.postgresql.auth.postgresPassword }}
             - name: POSTGRES_DB
-              value: probo
+              value: {{ .Values.postgresql.auth.database }}
           ports:
             - containerPort: 5432
           volumeMounts:
@@ -40,7 +40,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "probo.fullname" . }}-postgresql
+  name: {{ .Release.Name }}-postgresql-demo
 spec:
   selector:
     app: {{ include "probo.fullname" . }}-postgresql-demo
@@ -61,10 +61,8 @@ data:
     set -eu
 
     psql -v ON_ERROR_STOP=1 -U $POSTGRES_USER <<-EOF
-    CREATE USER probod;
     ALTER USER probod WITH SUPERUSER;
     ALTER USER probod PASSWORD 'probod';
-    CREATE DATABASE probod;
     GRANT ALL PRIVILEGES ON DATABASE probod TO probod;
     CREATE DATABASE probod_test;
     GRANT ALL PRIVILEGES ON DATABASE probod_test TO probod;
