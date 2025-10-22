@@ -34,8 +34,27 @@ echo "Save these secrets securely!"
 
 ### 2. Install
 
+## Install
+
+#### Using Official Chart Repository
+> Have Helm 3 [installed](https://helm.sh/docs/intro/install).
+
+```sh
+helm repo add probo https://getprobo.github.io/probo-helm-charts/
+helm install myprobo probo/probo -n probo --create-namespace --values values.yaml
+```
+
+To update versions:
+
+```
+helm repo update probo
+helm upgrade myprobo probo/probo -n probo --values values.yaml
+```
+
+#### Using Local Chart
+
 ```bash
-helm install probo ./probo \
+helm install probo ./charts/probo \
   --set probo.hostname="probo.example.com" \
   --set probo.encryptionKey="$ENCRYPTION_KEY" \
   --set probo.auth.cookieSecret="$COOKIE_SECRET" \
@@ -118,7 +137,7 @@ kubectl logs -f deployment/probo
 
 ### Upgrade
 ```bash
-helm upgrade probo ./probo -f values-production.yaml
+helm upgrade probo ./charts/probo -f values-production.yaml
 ```
 
 ### Uninstall

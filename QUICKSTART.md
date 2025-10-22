@@ -171,8 +171,8 @@ kubectl run -it --rm debug --image=postgres:17 --restart=Never -- \
 
 ### Need Help?
 
-- 📖 [Full Documentation](./probo/README.md)
-- 🧪 [Testing Guide](./TESTING.md)
+- 📖 [Full Documentation](charts/probo/README.md)
+- 🧪 [Testing Guide](TESTING.md)
 - 💬 [Discord](https://discord.gg/8qfdJYfvpY)
 - 🐛 [GitHub Issues](https://github.com/getprobo/probo/issues)
 

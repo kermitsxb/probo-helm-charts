@@ -1,321 +1,280 @@
-# Testing the Probo Helm Chart
+# Helm Chart Local Testing Guide
 
-This guide explains how to test the Helm chart locally before deploying to production.
+This guide shows you how to test the Probo Helm chart locally without needing to push it to a Helm repository.
 
 ## Prerequisites
 
-- [Helm](https://helm.sh/docs/intro/install/) 3.8+
-- [kubectl](https://kubernetes.io/docs/tasks/tools/)
-- A Kubernetes cluster (kind, minikube, k3s, or cloud provider)
+- Helm 3.x installed
+- kubectl configured (for actual installations)
+- A Kubernetes cluster (for actual installations): minikube, kind, k3s, or remote cluster
 
-## Validation
+## Testing Methods
 
-### 1. Lint the Chart
+### 1. Validate Chart Structure
+
+Check if the chart is well-formed:
 
 ```bash
-cd deploy/helm
+cd /Users/thomas/Projets/Probo/probo-helm-charts/charts
 helm lint probo
 ```
 
-### 2. Template Validation
+### 2. Render Templates (Dry Run)
 
-Generate and review the Kubernetes manifests:
-
-```bash
-# Generate manifests with default values
-helm template probo ./probo > /tmp/probo-manifests.yaml
-
-# Review the output
-cat /tmp/probo-manifests.yaml
-```
-
-### 3. Dry Run
-
-Test the installation without actually deploying:
+See what Kubernetes manifests would be generated without installing:
 
 ```bash
-helm install probo ./probo \
-  --dry-run \
-  --debug \
-  --set probo.encryptionKey="test-encryption-key-AAAAAAAAAAAAAAAAAAAA=" \
-  --set probo.auth.cookieSecret="test-cookie-secret-AAAAAAAAAAAAAAAAAAAAAA=" \
-  --set probo.auth.passwordPepper="test-password-pepper-AAAAAAAAAAAAAAAA=" \
-  --set probo.trustAuth.tokenSecret="test-trust-token-secret-AAAAAAAAAAAAAAA="
+# Using test values file
+helm template my-probo ./charts/probo -f probo/values-test.yaml --namespace probo-test
+
+# Show only specific template
+helm template my-probo ./charts/probo -f probo/values-test.yaml --show-only templates/configmap.yaml
+
+# Show only deployment
+helm template my-probo ./charts/probo -f probo/values-test.yaml --show-only templates/deployment.yaml
 ```
 
-## Local Testing
+### 3. View Generated Config File
 
-### Using kind (Kubernetes in Docker)
-
-1. **Create a kind cluster:**
+Check the generated `/etc/probod/config.yml`:
 
 ```bash
-kind create cluster --name probo-test
+helm template my-probo ./charts/probo -f probo/values-test.yaml \
+  --show-only templates/configmap.yaml | grep -A 100 "config.yml:"
 ```
 
-2. **Generate secrets:**
+### 4. Install in a Test Namespace
+
+Actually install the chart in a Kubernetes cluster:
 
 ```bash
-export ENCRYPTION_KEY=$(openssl rand -base64 32)
-export COOKIE_SECRET=$(openssl rand -base64 32)
-export PASSWORD_PEPPER=$(openssl rand -base64 32)
-export TRUST_TOKEN_SECRET=$(openssl rand -base64 32)
+# Create test namespace
+kubectl create namespace probo-test
+
+# Install chart
+helm install my-probo ./charts/probo \
+  -f probo/values-test.yaml \
+  --namespace probo-test
+
+# Check installation status
+helm status my-probo --namespace probo-test
+
+# List resources
+kubectl get all -n probo-test
+
+# Check the ConfigMap
+kubectl get configmap my-probo -n probo-test -o yaml
+
+# Check the generated config inside the pod
+kubectl exec -n probo-test deployment/my-probo -- cat /etc/probod/config.yml
 ```
 
-3. **Install the chart:**
+### 5. Upgrade Installation
+
+Test upgrading the chart:
 
 ```bash
-helm install probo ./probo \
-  --set probo.encryptionKey="$ENCRYPTION_KEY" \
-  --set probo.auth.cookieSecret="$COOKIE_SECRET" \
-  --set probo.auth.passwordPepper="$PASSWORD_PEPPER" \
-  --set probo.trustAuth.tokenSecret="$TRUST_TOKEN_SECRET" \
-  --set probo.hostname="localhost:8080" \
-  --set image.tag="latest"
+# Make changes to values or templates, then:
+helm upgrade my-probo ./charts/probo \
+  -f probo/values-test.yaml \
+  --namespace probo-test
+
+# Or use upgrade with install flag
+helm upgrade --install my-probo ./charts/probo \
+  -f probo/values-test.yaml \
+  --namespace probo-test
 ```
 
-4. **Wait for pods to be ready:**
+### 6. Diff Before Upgrade
+
+See what would change before upgrading (requires helm-diff plugin):
 
 ```bash
-kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=probo --timeout=300s
+# Install plugin if needed
+helm plugin install https://github.com/databus23/helm-diff
+
+# Show diff
+helm diff upgrade my-probo ./charts/probo \
+  -f probo/values-test.yaml \
+  --namespace probo-test
 ```
 
-5. **Port forward and test:**
+### 7. Test with Different Values
+
+Override specific values for testing:
 
 ```bash
-kubectl port-forward svc/probo 8080:8080
-# Visit http://localhost:8080
+# Enable persistence
+helm template my-probo ./charts/probo \
+  -f probo/values-test.yaml \
+  --set persistence.enabled=true \
+  --set persistence.size=5Gi
+
+# Disable Chrome
+helm template my-probo ./charts/probo \
+  -f probo/values-test.yaml \
+  --set chrome.enabled=false \
+  --set chrome.external.addr="external-chrome:9222"
+
+# Enable tracing
+helm template my-probo ./charts/probo \
+  -f probo/values-test.yaml \
+  --set probo.tracing.enabled=true \
+  --set probo.tracing.addr="tempo:4317"
 ```
 
-6. **Check logs:**
+### 8. Package Chart
+
+Create a `.tgz` package:
 
 ```bash
-kubectl logs -f deployment/probo
-```
-
-### Using minikube
-
-1. **Start minikube:**
-
-```bash
-minikube start
-```
-
-2. **Follow steps 2-6 from the kind section above**
-
-## Testing Scenarios
-
-### Test 1: Default Installation with Bundled Dependencies
-
-```bash
-helm install probo ./probo \
-  --set probo.encryptionKey="$ENCRYPTION_KEY" \
-  --set probo.auth.cookieSecret="$COOKIE_SECRET" \
-  --set probo.auth.passwordPepper="$PASSWORD_PEPPER" \
-  --set probo.trustAuth.tokenSecret="$TRUST_TOKEN_SECRET"
-
-# Verify all components are running
-kubectl get pods
-# Should show: probo, probo-postgresql, probo-minio, probo-chrome
-```
-
-### Test 2: External PostgreSQL
-
-```bash
-# First, deploy a test PostgreSQL
-kubectl run postgres --image=postgres:17.4 \
-  --env="POSTGRES_DB=probod" \
-  --env="POSTGRES_USER=probod" \
-  --env="POSTGRES_PASSWORD=testpass"
-
-kubectl expose pod postgres --port=5432
-
-# Install Probo with external PostgreSQL
-helm install probo ./probo \
-  --set probo.encryptionKey="$ENCRYPTION_KEY" \
-  --set probo.auth.cookieSecret="$COOKIE_SECRET" \
-  --set probo.auth.passwordPepper="$PASSWORD_PEPPER" \
-  --set probo.trustAuth.tokenSecret="$TRUST_TOKEN_SECRET" \
-  --set postgresql.enabled=false \
-  --set postgresql.external.host=postgres \
-  --set postgresql.external.password=testpass
-```
-
-### Test 3: Ingress Configuration
-
-```bash
-# Install nginx-ingress controller
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
-
-# Wait for ingress controller
-kubectl wait --namespace ingress-nginx \
-  --for=condition=ready pod \
-  --selector=app.kubernetes.io/component=controller \
-  --timeout=90s
-
-# Install Probo with ingress
-helm install probo ./probo \
-  --set probo.encryptionKey="$ENCRYPTION_KEY" \
-  --set probo.auth.cookieSecret="$COOKIE_SECRET" \
-  --set probo.auth.passwordPepper="$PASSWORD_PEPPER" \
-  --set probo.trustAuth.tokenSecret="$TRUST_TOKEN_SECRET" \
-  --set probo.hostname="probo.local" \
-  --set probo.auth.cookieDomain="probo.local" \
-  --set ingress.enabled=true \
-  --set ingress.className=nginx \
-  --set ingress.hosts[0].host=probo.local \
-  --set ingress.hosts[0].paths[0].path=/ \
-  --set ingress.hosts[0].paths[0].pathType=Prefix
-
-# Add to /etc/hosts
-echo "127.0.0.1 probo.local" | sudo tee -a /etc/hosts
-
-# Test
-curl http://probo.local
-```
-
-### Test 4: Autoscaling
-
-```bash
-# Install metrics-server (required for HPA)
-kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
-
-# Install with autoscaling enabled
-helm install probo ./probo \
-  --set probo.encryptionKey="$ENCRYPTION_KEY" \
-  --set probo.auth.cookieSecret="$COOKIE_SECRET" \
-  --set probo.auth.passwordPepper="$PASSWORD_PEPPER" \
-  --set probo.trustAuth.tokenSecret="$TRUST_TOKEN_SECRET" \
-  --set autoscaling.enabled=true \
-  --set autoscaling.minReplicas=2 \
-  --set autoscaling.maxReplicas=5
-
-# Check HPA
-kubectl get hpa
-```
-
-## Verification Checklist
-
-After installation, verify:
-
-- [ ] All pods are running: `kubectl get pods`
-- [ ] Service is accessible: `kubectl get svc`
-- [ ] ConfigMap is created: `kubectl get configmap probo -o yaml`
-- [ ] Secret is created: `kubectl get secret probo`
-- [ ] Logs show no errors: `kubectl logs -f deployment/probo`
-- [ ] Database connection works (check logs for migration messages)
-- [ ] Application responds to HTTP requests
-- [ ] Metrics endpoint is accessible: `curl http://localhost:8081/metrics`
-
-## Cleanup
-
-```bash
-# Uninstall the release
-helm uninstall probo
-
-# Delete PVCs
-kubectl delete pvc -l app.kubernetes.io/name=probo
-
-# Delete test PostgreSQL (if created)
-kubectl delete pod postgres
-kubectl delete svc postgres
-
-# Delete kind cluster
-kind delete cluster --name probo-test
-
-# Or stop minikube
-minikube stop
-minikube delete
-```
-
-## Troubleshooting
-
-### Pods Not Starting
-
-```bash
-# Check pod status
-kubectl get pods
-kubectl describe pod <pod-name>
-
-# Check events
-kubectl get events --sort-by='.lastTimestamp'
-```
-
-### Database Connection Issues
-
-```bash
-# Check if PostgreSQL is ready
-kubectl logs deployment/probo-postgresql
-
-# Test connection from Probo pod
-kubectl exec -it deployment/probo -- sh
-# If the image doesn't have shell, check init container logs
-kubectl logs deployment/probo -c wait-for-db
-```
-
-### Configuration Issues
-
-```bash
-# View the generated config
-kubectl exec -it deployment/probo -- cat /etc/probo/config.yaml
-
-# Check environment variables
-kubectl exec -it deployment/probo -- env | grep -E '(DB_|S3_|ENCRYPTION_KEY|COOKIE_SECRET)'
-```
-
-### Image Pull Issues
-
-```bash
-# If using GHCR, you might need to authenticate
-kubectl create secret docker-registry ghcr \
-  --docker-server=ghcr.io \
-  --docker-username=<github-username> \
-  --docker-password=<github-token>
-
-# Update values to use the secret
-helm upgrade probo ./probo \
-  --reuse-values \
-  --set imagePullSecrets[0].name=ghcr
-```
-
-## CI/CD Integration
-
-### GitHub Actions Example
-
-```yaml
-name: Test Helm Chart
-on: [pull_request]
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: azure/setup-helm@v4
-      - name: Lint chart
-        run: helm lint deploy/helm/probo
-      - name: Template chart
-        run: |
-          helm template probo deploy/helm/probo \
-            --set probo.encryptionKey="test" \
-            --set probo.auth.cookieSecret="test" \
-            --set probo.auth.passwordPepper="test" \
-            --set probo.trustAuth.tokenSecret="test"
-```
-
-## Package and Share
-
-### Create Helm Package
-
-```bash
-helm package ./probo
+cd /Users/thomas/Projets/Probo/probo-helm-charts/charts
+helm package probo
 # Creates: probo-0.1.0.tgz
 ```
 
-### Create Helm Repository
+### 9. Install from Package
+
+Install from the packaged chart:
 
 ```bash
-# Create index
-helm repo index . --url https://charts.getprobo.com
-
-# Upload probo-0.1.0.tgz and index.yaml to your chart repository
+helm install my-probo probo-0.1.0.tgz \
+  -f probo/values-test.yaml \
+  --namespace probo-test
 ```
+
+### 10. Uninstall
+
+Clean up test installation:
+
+```bash
+helm uninstall my-probo --namespace probo-test
+kubectl delete namespace probo-test
+```
+
+## Testing Specific Features
+
+### Test Persistence
+
+```bash
+# With persistence enabled
+helm template test-pvc ./charts/probo \
+  -f probo/values-test.yaml \
+  --set persistence.enabled=true \
+  --show-only templates/pvc.yaml
+
+# With existing claim
+helm template test-pvc ./charts/probo \
+  -f probo/values-test.yaml \
+  --set persistence.enabled=true \
+  --set persistence.existingClaim="my-existing-pvc" \
+  --show-only templates/pvc.yaml
+```
+
+### Test Ingress
+
+```bash
+helm template test-ingress ./charts/probo \
+  -f probo/values-test.yaml \
+  --set ingress.enabled=true \
+  --set ingress.className=nginx \
+  --set ingress.hosts[0].host=probo.example.com \
+  --show-only templates/ingress.yaml
+```
+
+### Test Autoscaling
+
+```bash
+helm template test-hpa ./charts/probo \
+  -f probo/values-test.yaml \
+  --set autoscaling.enabled=true \
+  --set autoscaling.minReplicas=2 \
+  --set autoscaling.maxReplicas=5 \
+  --show-only templates/hpa.yaml
+```
+
+### Test Service Monitor (Prometheus)
+
+```bash
+helm template test-metrics ./charts/probo \
+  -f probo/values-test.yaml \
+  --set metrics.serviceMonitor.enabled=true \
+  --show-only templates/servicemonitor.yaml
+```
+
+## Quick Test Commands
+
+```bash
+# Full dry-run with all templates
+cd /Users/thomas/Projets/Probo/probo-helm-charts/charts
+helm template my-probo ./charts/probo -f probo/values-test.yaml > /tmp/probo-manifests.yaml
+
+# View the generated manifests
+cat /tmp/probo-manifests.yaml
+
+# Count resources
+grep -c "^kind:" /tmp/probo-manifests.yaml
+
+# Install for real testing
+helm install my-probo ./charts/probo -f probo/values-test.yaml -n probo-test --create-namespace
+
+# Watch pod startup
+kubectl get pods -n probo-test -w
+
+# View logs
+kubectl logs -n probo-test deployment/my-probo -f
+
+# Port-forward to access locally
+kubectl port-forward -n probo-test svc/my-probo 8080:8080
+```
+
+## Verifying Config Generation
+
+To verify the config file is correctly mounted in the container:
+
+```bash
+# Exec into the pod
+kubectl exec -it -n probo-test deployment/my-probo -- sh
+
+# Inside the container:
+ls -la /etc/probod/
+cat /etc/probod/config.yml
+
+# Check if probod is using the config
+ps aux | grep probod
+```
+
+## Common Issues
+
+### Chart not linting
+
+```bash
+# Check for template syntax errors
+helm lint probo --debug
+```
+
+### Templates not rendering
+
+```bash
+# Add --debug flag to see detailed errors
+helm template my-probo ./charts/probo -f probo/values-test.yaml --debug
+```
+
+### Missing required values
+
+Ensure all required values are set in your values file or via `--set` flags:
+- `probo.encryptionKey`
+- `probo.auth.cookieSecret`
+- `probo.auth.passwordPepper`
+- `probo.trustAuth.tokenSecret`
+- `postgresql.host`
+- `postgresql.password`
+- `s3.accessKeyId`
+- `s3.secretAccessKey`
+
+## Next Steps
+
+Once local testing is complete:
+1. Push chart to a Helm repository (ChartMuseum, Harbor, GitHub Pages, etc.)
+2. Use in CI/CD pipelines
+3. Deploy to staging/production environments
