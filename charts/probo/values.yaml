@@ -236,28 +236,76 @@ probo:
   #     auth-url: "https://github.com/login/oauth/authorize"
   #     token-url: "https://github.com/login/oauth/access_token"
 
-# PostgreSQL configuration (External - REQUIRED)
-# Use a managed PostgreSQL service (AWS RDS, GCP Cloud SQL, Azure Database, etc.)
+# PostgreSQL configuration
+# For production: Use external managed PostgreSQL (AWS RDS, GCP Cloud SQL, etc.)
+# For testing: Enable the included PostgreSQL chart
 postgresql:
-  host: ""  # REQUIRED: PostgreSQL hostname
+  # Enable included PostgreSQL for testing/development (NOT for production)
+  enabled: false
+
+  # External PostgreSQL configuration (used when enabled=false)
+  host: ""  # REQUIRED when enabled=false: PostgreSQL hostname
   port: 5432
   database: "probod"
   username: "probod"
-  password: ""  # REQUIRED: PostgreSQL password
+  password: ""  # REQUIRED when enabled=false: PostgreSQL password
   poolSize: 100
   # CA certificate bundle for TLS connections (optional)
   caCertBundle: ""
 
-# S3 storage configuration (REQUIRED)
-# Use AWS S3 or S3-compatible storage
+  # Bitnami PostgreSQL subchart configuration (used when enabled=true)
+  # See: https://github.com/bitnami/charts/tree/main/bitnami/postgresql
+  auth:
+    database: "probod"
+    username: "probod"
+    password: "probod-test-password"  # Change this for testing
+  primary:
+    persistence:
+      enabled: false  # Use false for testing, true for persistent data
+      size: 8Gi
+    resources:
+      limits:
+        memory: 1Gi
+        cpu: 1000m
+      requests:
+        memory: 256Mi
+        cpu: 100m
+
+# S3 storage configuration
+# For production: Use external S3 (AWS S3, GCS, etc.)
+# For testing: Enable the included MinIO chart
 s3:
+  # External S3 configuration (used when minio.enabled=false)
   region: "us-east-1"
   bucket: "probod"
   # For AWS S3, leave endpoint empty
   # For S3-compatible storage (MinIO, DigitalOcean Spaces, etc.), set the endpoint
   endpoint: ""
-  accessKeyId: ""  # REQUIRED: S3 access key
-  secretAccessKey: ""  # REQUIRED: S3 secret key
+  accessKeyId: ""  # REQUIRED when minio.enabled=false: S3 access key
+  secretAccessKey: ""  # REQUIRED when minio.enabled=false: S3 secret key
+
+# MinIO configuration
+# Enable included MinIO for testing/development (NOT for production)
+minio:
+  enabled: false
+
+  # Bitnami MinIO subchart configuration (used when enabled=true)
+  # See: https://github.com/bitnami/charts/tree/main/bitnami/minio
+  mode: standalone
+  auth:
+    rootUser: "minio-admin"
+    rootPassword: "minio-test-password"  # Change this for testing
+  defaultBuckets: "probod"
+  persistence:
+    enabled: false  # Use false for testing, true for persistent data
+    size: 10Gi
+  resources:
+    limits:
+      memory: 1Gi
+      cpu: 1000m
+    requests:
+      memory: 256Mi
+      cpu: 100m
 
 # Headless Chrome for PDF generation
 chrome:

@@ -26,22 +26,48 @@ probo:
       addr: "mailhog:1025"
       tlsRequired: false
 
-# PostgreSQL configuration (use test database)
+# PostgreSQL configuration
+# Enable the included PostgreSQL subchart for testing
 postgresql:
-  host: "postgres.test.local"
-  port: 5432
-  database: "probod_test"
-  username: "probod"
-  password: "test-db-password-change-me"
-  poolSize: 10
+  enabled: true
+  auth:
+    database: "probod"
+    username: "probod"
+    password: "probod-test-password"
+  primary:
+    persistence:
+      enabled: false  # Disable for quick testing
+    resources:
+      limits:
+        memory: 512Mi
+        cpu: 500m
+      requests:
+        memory: 128Mi
+        cpu: 100m
 
-# S3 storage configuration (use MinIO for testing)
+# S3 storage configuration
+# Leave s3 section as defaults - MinIO will override when enabled
 s3:
   region: "us-east-1"
-  bucket: "probod-test"
-  endpoint: "http://minio.test.local:9000"
-  accessKeyId: "test-access-key"
-  secretAccessKey: "test-secret-key"
+  bucket: "probod"
+
+# MinIO configuration
+# Enable the included MinIO subchart for testing
+minio:
+  enabled: true
+  auth:
+    rootUser: "minio-admin"
+    rootPassword: "minio-test-password"
+  defaultBuckets: "probod"
+  persistence:
+    enabled: false  # Disable for quick testing
+  resources:
+    limits:
+      memory: 512Mi
+      cpu: 500m
+    requests:
+      memory: 128Mi
+      cpu: 100m
 
 # Enable Chrome for PDF generation
 chrome:

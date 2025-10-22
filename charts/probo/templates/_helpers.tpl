@@ -63,35 +63,88 @@ Create the name of the service account to use
 PostgreSQL hostname
 */}}
 {{- define "probo.postgresql.host" -}}
-{{- .Values.postgresql.host | required "postgresql.host is required" }}
+{{- if .Values.postgresql.enabled }}
+{{- printf "%s-postgresql" .Release.Name }}
+{{- else }}
+{{- .Values.postgresql.host | required "postgresql.host is required when postgresql.enabled=false" }}
+{{- end }}
 {{- end }}
 
 {{/*
 PostgreSQL port
 */}}
 {{- define "probo.postgresql.port" -}}
+{{- if .Values.postgresql.enabled }}
+{{- 5432 }}
+{{- else }}
 {{- .Values.postgresql.port | default 5432 }}
+{{- end }}
 {{- end }}
 
 {{/*
 PostgreSQL database name
 */}}
 {{- define "probo.postgresql.database" -}}
+{{- if .Values.postgresql.enabled }}
+{{- .Values.postgresql.auth.database | default "probod" }}
+{{- else }}
 {{- .Values.postgresql.database | default "probod" }}
+{{- end }}
 {{- end }}
 
 {{/*
 PostgreSQL username
 */}}
 {{- define "probo.postgresql.username" -}}
+{{- if .Values.postgresql.enabled }}
+{{- .Values.postgresql.auth.username | default "probod" }}
+{{- else }}
 {{- .Values.postgresql.username | default "probod" }}
+{{- end }}
+{{- end }}
+
+{{/*
+PostgreSQL password (from subchart or external config)
+*/}}
+{{- define "probo.postgresql.password" -}}
+{{- if .Values.postgresql.enabled }}
+{{- .Values.postgresql.auth.password | required "postgresql.auth.password is required when postgresql.enabled=true" }}
+{{- else }}
+{{- .Values.postgresql.password | required "postgresql.password is required when postgresql.enabled=false" }}
+{{- end }}
 {{- end }}
 
 {{/*
 S3 endpoint
 */}}
 {{- define "probo.s3.endpoint" -}}
+{{- if .Values.minio.enabled }}
+{{- printf "http://%s-minio:9000" .Release.Name }}
+{{- else }}
 {{- .Values.s3.endpoint }}
+{{- end }}
+{{- end }}
+
+{{/*
+S3 access key
+*/}}
+{{- define "probo.s3.accessKeyId" -}}
+{{- if .Values.minio.enabled }}
+{{- .Values.minio.auth.rootUser | required "minio.auth.rootUser is required when minio.enabled=true" }}
+{{- else }}
+{{- .Values.s3.accessKeyId | required "s3.accessKeyId is required when minio.enabled=false" }}
+{{- end }}
+{{- end }}
+
+{{/*
+S3 secret key
+*/}}
+{{- define "probo.s3.secretAccessKey" -}}
+{{- if .Values.minio.enabled }}
+{{- .Values.minio.auth.rootPassword | required "minio.auth.rootPassword is required when minio.enabled=true" }}
+{{- else }}
+{{- .Values.s3.secretAccessKey | required "s3.secretAccessKey is required when minio.enabled=false" }}
+{{- end }}
 {{- end }}
 
 {{/*
