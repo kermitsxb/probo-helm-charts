@@ -39,7 +39,6 @@ postgresql:
     postgresUser: postgres
     postgresPassword: probo
     database: probo
-
 # S3 storage configuration
 # Leave s3 section as defaults - MinIO will override when enabled
 s3:

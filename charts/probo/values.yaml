@@ -30,15 +30,15 @@ podLabels: {}
 
 podSecurityContext:
   runAsNonRoot: true
-  runAsUser: 1000
-  fsGroup: 1000
+  runAsUser: 1000  # probo user (UID defined in Dockerfile)
+  fsGroup: 1000    # probo group
 
 securityContext:
   allowPrivilegeEscalation: false
   capabilities:
     drop:
     - ALL
-  readOnlyRootFilesystem: false
+  readOnlyRootFilesystem: false  # /data directory requires write access for file uploads
 
 service:
   type: ClusterIP
