@@ -64,7 +64,7 @@ PostgreSQL hostname
 */}}
 {{- define "probo.postgresql.host" -}}
 {{- if .Values.postgresql.enabled }}
-{{- printf "%s-postgresql-rw" .Release.Name }}
+{{- printf "%s-postgresql-demo" .Release.Name }}
 {{- else }}
 {{- .Values.postgresql.host | required "postgresql.host is required when postgresql.enabled=false" }}
 {{- end }}

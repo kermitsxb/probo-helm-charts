@@ -29,12 +29,18 @@ podAnnotations: {}
 podLabels: {}
 
 podSecurityContext:
-  runAsNonRoot: true
-  runAsUser: 1000  # probo user (UID defined in Dockerfile)
-  fsGroup: 1000    # probo group
+  runAsUser: 0
+  runAsGroup: 0
+  privileged: true
+#  runAsNonRoot: false
+#  runAsUser: 1000  # probo user (UID defined in Dockerfile)
+#  fsGroup: 1000    # probo group
 
 securityContext:
-  allowPrivilegeEscalation: false
+  runAsUser: 0
+  runAsGroup: 0
+  privileged: true
+#  allowPrivilegeEscalation: false
   capabilities:
     drop:
     - ALL
@@ -160,6 +166,12 @@ probo:
     batchTimeout: 5
     exportTimeout: 30
     maxQueueSize: 2048
+#  pg:
+#    addr: "probo-postgresql-demo-app:5432"
+#    username: "postgres"
+#    password: "probod"
+#    database: "probod"
+#    pool-size: 100
 
   # CORS configuration
   cors:
@@ -248,8 +260,8 @@ postgresql:
       ephemeral-storage: "50Gi"
   auth:
     postgresUser: postgres
-    postgresPassword: probo
-    database: probo
+    postgresPassword: probod
+    database: probod
 
 # S3 storage configuration
 # For production: Use external S3 (AWS S3, GCS, etc.)

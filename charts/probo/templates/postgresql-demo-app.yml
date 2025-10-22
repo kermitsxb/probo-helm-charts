@@ -2,16 +2,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: probo-postgresql-demo-app
+  name: {{ include "probo.fullname" . }}-postgresql-demo
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: probo-postgresql-demo-app
+      app: {{ include "probo.fullname" . }}-postgresql-demo
   template:
     metadata:
       labels:
-        app: probo-postgresql-demo-app
+        app: {{ include "probo.fullname" . }}-postgresql-demo
     spec:
       containers:
         - name: postgres
@@ -40,10 +40,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: probo-postgresql
+  name: {{ include "probo.fullname" . }}-postgresql
 spec:
   selector:
-    app: probo-postgresql-demo-app
+    app: {{ include "probo.fullname" . }}-postgresql-demo
   ports:
     - port: 5432
       targetPort: 5432
