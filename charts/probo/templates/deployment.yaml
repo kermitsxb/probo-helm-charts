@@ -119,7 +119,7 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /etc/probod
-              readOnly: true
+              readOnly: false
             - name: data
               mountPath: /data
           {{- with .Values.volumeMounts }}

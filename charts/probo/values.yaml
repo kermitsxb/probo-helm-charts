@@ -38,7 +38,7 @@ securityContext:
   capabilities:
     drop:
     - ALL
-  readOnlyRootFilesystem: true
+  readOnlyRootFilesystem: false
 
 service:
   type: ClusterIP
@@ -240,36 +240,16 @@ probo:
 # For production: Use external managed PostgreSQL (AWS RDS, GCP Cloud SQL, etc.)
 # For testing: Enable the included PostgreSQL chart
 postgresql:
-  # Enable included PostgreSQL for testing/development (NOT for production)
-  enabled: false
-
-  # External PostgreSQL configuration (used when enabled=false)
-  host: ""  # REQUIRED when enabled=false: PostgreSQL hostname
-  port: 5432
-  database: "probod"
-  username: "probod"
-  password: ""  # REQUIRED when enabled=false: PostgreSQL password
-  poolSize: 100
-  # CA certificate bundle for TLS connections (optional)
-  caCertBundle: ""
-
-  # Bitnami PostgreSQL subchart configuration (used when enabled=true)
-  # See: https://github.com/bitnami/charts/tree/main/bitnami/postgresql
+  # -- enabled included Postgres container for demo purposes only using cloudnative-pg
+  enabled: true
+  resources:
+    limits:
+      memory: "2Gi"
+      ephemeral-storage: "50Gi"
   auth:
-    database: "probod"
-    username: "probod"
-    password: "probod-test-password"  # Change this for testing
-  primary:
-    persistence:
-      enabled: false  # Use false for testing, true for persistent data
-      size: 8Gi
-    resources:
-      limits:
-        memory: 1Gi
-        cpu: 1000m
-      requests:
-        memory: 256Mi
-        cpu: 100m
+    postgresUser: postgres
+    postgresPassword: probo
+    database: probo
 
 # S3 storage configuration
 # For production: Use external S3 (AWS S3, GCS, etc.)
@@ -287,25 +267,17 @@ s3:
 # MinIO configuration
 # Enable included MinIO for testing/development (NOT for production)
 minio:
-  enabled: false
+  enabled: true
 
   # Bitnami MinIO subchart configuration (used when enabled=true)
   # See: https://github.com/bitnami/charts/tree/main/bitnami/minio
   mode: standalone
+  primary:
+    enabled: true
   auth:
     rootUser: "minio-admin"
     rootPassword: "minio-test-password"  # Change this for testing
   defaultBuckets: "probod"
-  persistence:
-    enabled: false  # Use false for testing, true for persistent data
-    size: 10Gi
-  resources:
-    limits:
-      memory: 1Gi
-      cpu: 1000m
-    requests:
-      memory: 256Mi
-      cpu: 100m
 
 # Headless Chrome for PDF generation
 chrome:

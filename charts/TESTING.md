@@ -8,6 +8,44 @@ This guide shows you how to test the Probo Helm chart locally without needing to
 - kubectl configured (for actual installations)
 - A Kubernetes cluster (for actual installations): minikube, kind, k3s, or remote cluster
 
+## Quick Start for Testing
+
+The chart includes **optional PostgreSQL and MinIO subcharts** for testing purposes. These are **disabled by default** and should **never be used in production**.
+
+### Install Dependencies
+
+Before testing, you need to fetch the subchart dependencies:
+
+```bash
+cd /Users/thomas/Projets/Probo/probo-helm-charts/charts/probo
+helm dependency update
+```
+
+This downloads the PostgreSQL and MinIO charts from Bitnami.
+
+### Test with Included Services
+
+The `values-test.yaml` file enables both PostgreSQL and MinIO for easy local testing:
+
+```bash
+cd /Users/thomas/Projets/Probo/probo-helm-charts/charts
+
+# Install with internal PostgreSQL and MinIO
+helm install my-probo ./probo \
+  -f probo/values-test.yaml \
+  --namespace probo-test \
+  --create-namespace
+
+# Check all pods are running
+kubectl get pods -n probo-test
+
+# You should see:
+# - my-probo-<hash>              (main application)
+# - my-probo-chrome-<hash>       (headless chrome)
+# - my-probo-postgresql-0        (database)
+# - my-probo-minio-<hash>        (S3 storage)
+```
+
 ## Testing Methods
 
 ### 1. Validate Chart Structure
@@ -150,6 +188,57 @@ Clean up test installation:
 ```bash
 helm uninstall my-probo --namespace probo-test
 kubectl delete namespace probo-test
+```
+
+## Internal Services for Testing
+
+### PostgreSQL Subchart
+
+Enable the included PostgreSQL for development/testing:
+
+```bash
+helm install my-probo ./probo \
+  --set postgresql.enabled=true \
+  --set postgresql.auth.password="test-password" \
+  -n probo-test
+```
+
+When `postgresql.enabled=true`, the chart:
+- Deploys a Bitnami PostgreSQL pod
+- Automatically configures Probo to use `<release-name>-postgresql:5432`
+- Uses credentials from `postgresql.auth.*` values
+
+### MinIO Subchart
+
+Enable the included MinIO for development/testing:
+
+```bash
+helm install my-probo ./probo \
+  --set minio.enabled=true \
+  --set minio.auth.rootUser="admin" \
+  --set minio.auth.rootPassword="test-password" \
+  -n probo-test
+```
+
+When `minio.enabled=true`, the chart:
+- Deploys a Bitnami MinIO pod
+- Automatically configures Probo to use `http://<release-name>-minio:9000`
+- Uses credentials from `minio.auth.*` values
+- Creates the `probod` bucket automatically (via `minio.defaultBuckets`)
+
+### Using External Services
+
+For production or when you have external PostgreSQL/S3:
+
+```bash
+helm install my-probo ./probo \
+  --set postgresql.enabled=false \
+  --set postgresql.host="my-rds.amazonaws.com" \
+  --set postgresql.password="secure-password" \
+  --set minio.enabled=false \
+  --set s3.accessKeyId="AKIA..." \
+  --set s3.secretAccessKey="..." \
+  -n probo-prod
 ```
 
 ## Testing Specific Features

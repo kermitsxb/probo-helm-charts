@@ -27,23 +27,18 @@ probo:
       tlsRequired: false
 
 # PostgreSQL configuration
-# Enable the included PostgreSQL subchart for testing
+# Enable the included CloudNativePG cluster for testing
 postgresql:
+  # -- enabled included Postgres container for demo purposes only using cloudnative-pg
   enabled: true
+  resources:
+    limits:
+      memory: "2Gi"
+      ephemeral-storage: "50Gi"
   auth:
-    database: "probod"
-    username: "probod"
-    password: "probod-test-password"
-  primary:
-    persistence:
-      enabled: false  # Disable for quick testing
-    resources:
-      limits:
-        memory: 512Mi
-        cpu: 500m
-      requests:
-        memory: 128Mi
-        cpu: 100m
+    postgresUser: postgres
+    postgresPassword: probo
+    database: probo
 
 # S3 storage configuration
 # Leave s3 section as defaults - MinIO will override when enabled
@@ -54,20 +49,17 @@ s3:
 # MinIO configuration
 # Enable the included MinIO subchart for testing
 minio:
-  enabled: true
+  enabled: false
+
+  # Bitnami MinIO subchart configuration (used when enabled=true)
+  # See: https://github.com/bitnami/charts/tree/main/bitnami/minio
+  mode: standalone
+  primary:
+    enabled: true
   auth:
     rootUser: "minio-admin"
-    rootPassword: "minio-test-password"
+    rootPassword: "minio-test-password"  # Change this for testing
   defaultBuckets: "probod"
-  persistence:
-    enabled: false  # Disable for quick testing
-  resources:
-    limits:
-      memory: 512Mi
-      cpu: 500m
-    requests:
-      memory: 128Mi
-      cpu: 100m
 
 # Enable Chrome for PDF generation
 chrome:

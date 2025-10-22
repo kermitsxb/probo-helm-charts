@@ -64,7 +64,7 @@ PostgreSQL hostname
 */}}
 {{- define "probo.postgresql.host" -}}
 {{- if .Values.postgresql.enabled }}
-{{- printf "%s-postgresql" .Release.Name }}
+{{- printf "%s-postgresql-rw" .Release.Name }}
 {{- else }}
 {{- .Values.postgresql.host | required "postgresql.host is required when postgresql.enabled=false" }}
 {{- end }}
@@ -97,7 +97,7 @@ PostgreSQL username
 */}}
 {{- define "probo.postgresql.username" -}}
 {{- if .Values.postgresql.enabled }}
-{{- .Values.postgresql.auth.username | default "probod" }}
+{{- .Values.postgresql.auth.postgresUser | default "probod" }}
 {{- else }}
 {{- .Values.postgresql.username | default "probod" }}
 {{- end }}
@@ -108,7 +108,7 @@ PostgreSQL password (from subchart or external config)
 */}}
 {{- define "probo.postgresql.password" -}}
 {{- if .Values.postgresql.enabled }}
-{{- .Values.postgresql.auth.password | required "postgresql.auth.password is required when postgresql.enabled=true" }}
+{{- .Values.postgresql.auth.postgresPassword | required "postgresql.auth.postgresPassword is required when postgresql.enabled=true" }}
 {{- else }}
 {{- .Values.postgresql.password | required "postgresql.password is required when postgresql.enabled=false" }}
 {{- end }}

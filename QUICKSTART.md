@@ -34,11 +34,22 @@ helm install my-probo ./charts/probo \
   --set probo.auth.cookieSecret="$COOKIE_SECRET" \
   --set probo.auth.passwordPepper="$PASSWORD_PEPPER" \
   --set probo.trustAuth.tokenSecret="$TRUST_TOKEN_SECRET" \
-  --set postgresql.host="your-postgres-host.com" \
-  --set postgresql.password="your-db-password" \
+  --set postgresql.enabled=true \
+  --set postgres.auth.postgresUser="probod" \
+  --set postgres.auth.postgresPassword="your-db-password" \
+  --set postgres.auth.database="probod" \
+  --set minio.enabled=true \
   --set s3.bucket="your-bucket-name" \
   --set s3.accessKeyId="your-access-key" \
   --set s3.secretAccessKey="your-secret-key"
+```
+```bash
+helm install my-probo ./charts/probo \
+  --set probo.encryptionKey="$ENCRYPTION_KEY" \
+  --set probo.auth.cookieSecret="$COOKIE_SECRET" \
+  --set probo.auth.passwordPepper="$PASSWORD_PEPPER" \
+  --set probo.trustAuth.tokenSecret="$TRUST_TOKEN_SECRET" \
+  -f ./charts/probo/values.yaml
 ```
 
 ### Step 3: Access

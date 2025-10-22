@@ -18,3 +18,5 @@ bin/*
 
 # Vscode files
 .vscode
+
+charts/probo/charts
