@@ -54,7 +54,7 @@ helm upgrade myprobo probo/probo -n probo --values values.yaml
 #### Using Local Chart
 
 ```bash
-helm install probo ./charts/probo \
+helm install my-probo ./charts/probo \
   --set probo.hostname="probo.example.com" \
   --set probo.encryptionKey="$ENCRYPTION_KEY" \
   --set probo.auth.cookieSecret="$COOKIE_SECRET" \
@@ -93,7 +93,7 @@ For production deployments, we recommend:
 
 3. **Install:**
    ```bash
-   helm install probo ./probo -f values-production.yaml
+   helm install my-probo ./probo -f values-production.yaml
    ```
 
 ## Architecture
@@ -142,7 +142,7 @@ helm upgrade probo ./charts/probo -f values-production.yaml
 
 ### Uninstall
 ```bash
-helm uninstall probo
+helm uninstall my-probo
 ```
 
 ## Cloud Provider Examples

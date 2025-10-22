@@ -26,7 +26,7 @@ echo "Save these secrets securely!"
 ### Install
 
 ```bash
-helm install probo ./deploy/helm/probo \
+helm install my-probo ././charts/probo \
   --set probo.hostname="probo.example.com" \
   --set probo.encryptionKey="$ENCRYPTION_KEY" \
   --set probo.auth.cookieSecret="$COOKIE_SECRET" \
@@ -106,7 +106,7 @@ autoscaling:
 Install with:
 
 ```bash
-helm install probo ./deploy/helm/probo -f values-production.yaml
+helm install my-probo ././charts/probo -f values-production.yaml
 ```
 
 ## Configuration
@@ -173,13 +173,13 @@ Use your PostgreSQL provider's backup solution (e.g., AWS RDS automated backups,
 ## Upgrading
 
 ```bash
-helm upgrade probo ./deploy/helm/probo -f values-production.yaml
+helm upgrade probo ././charts/probo -f values-production.yaml
 ```
 
 ## Uninstalling
 
 ```bash
-helm uninstall probo
+helm uninstall my-probo
 ```
 
 **Note:** This does not delete your external PostgreSQL database or S3 bucket.

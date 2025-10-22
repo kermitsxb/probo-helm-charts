@@ -28,7 +28,7 @@ echo "TRUST_TOKEN_SECRET=$TRUST_TOKEN_SECRET"
 ### Step 2: Install
 
 ```bash
-helm install probo ./deploy/helm/probo \
+helm install my-probo ./charts/probo \
   --set probo.hostname="probo.example.com" \
   --set probo.encryptionKey="$ENCRYPTION_KEY" \
   --set probo.auth.cookieSecret="$COOKIE_SECRET" \
@@ -44,7 +44,7 @@ helm install probo ./deploy/helm/probo \
 ### Step 3: Access
 
 ```bash
-kubectl port-forward svc/probo 8080:8080
+kubectl port-forward svc/my-probo 8080:8080
 ```
 
 Then visit: **http://localhost:8080**
@@ -55,12 +55,12 @@ For production, use a values file:
 
 ```bash
 # 1. Copy the example
-cp deploy/helm/probo/values-production.yaml.example values-prod.yaml
+cp ./charts/probo/values-production.yaml.example values-prod.yaml
 
 # 2. Edit values-prod.yaml with your settings
 
 # 3. Install
-helm install probo ./deploy/helm/probo -f values-prod.yaml
+helm install my-probo ././charts/probo -f values-prod.yaml
 ```
 
 ## Common Tasks
@@ -78,12 +78,12 @@ kubectl get svc
 
 ### Upgrade
 ```bash
-helm upgrade probo ./deploy/helm/probo -f values-prod.yaml
+helm upgrade probo ././charts/probo -f values-prod.yaml
 ```
 
 ### Uninstall
 ```bash
-helm uninstall probo
+helm uninstall my-probo
 ```
 
 ## Cloud Provider Quick Setup
@@ -95,7 +95,7 @@ helm uninstall probo
 # - Amazon RDS PostgreSQL instance
 # - S3 bucket created
 
-helm install probo ./deploy/helm/probo \
+helm install my-probo ././charts/probo \
   --set probo.encryptionKey="$ENCRYPTION_KEY" \
   --set probo.auth.cookieSecret="$COOKIE_SECRET" \
   --set probo.auth.passwordPepper="$PASSWORD_PEPPER" \
@@ -115,7 +115,7 @@ helm install probo ./deploy/helm/probo \
 # - Cloud SQL PostgreSQL instance
 # - Cloud Storage bucket with HMAC keys
 
-helm install probo ./deploy/helm/probo \
+helm install my-probo ././charts/probo \
   --set probo.encryptionKey="$ENCRYPTION_KEY" \
   --set probo.auth.cookieSecret="$COOKIE_SECRET" \
   --set probo.auth.passwordPepper="$PASSWORD_PEPPER" \
@@ -135,7 +135,7 @@ helm install probo ./deploy/helm/probo \
 # - Managed PostgreSQL Database
 # - Spaces bucket
 
-helm install probo ./deploy/helm/probo \
+helm install my-probo ././charts/probo \
   --set probo.encryptionKey="$ENCRYPTION_KEY" \
   --set probo.auth.cookieSecret="$COOKIE_SECRET" \
   --set probo.auth.passwordPepper="$PASSWORD_PEPPER" \

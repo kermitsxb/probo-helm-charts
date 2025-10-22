@@ -25,13 +25,13 @@ See what Kubernetes manifests would be generated without installing:
 
 ```bash
 # Using test values file
-helm template my-probo ./charts/probo -f probo/values-test.yaml --namespace probo-test
+helm template my-probo ./charts/probo -f ./charts/probo/values-test.yaml --namespace probo-test
 
 # Show only specific template
-helm template my-probo ./charts/probo -f probo/values-test.yaml --show-only templates/configmap.yaml
+helm template my-probo ./charts/probo -f ./charts/probo/values-test.yaml --show-only templates/configmap.yaml
 
 # Show only deployment
-helm template my-probo ./charts/probo -f probo/values-test.yaml --show-only templates/deployment.yaml
+helm template my-probo ./charts/probo -f ./charts/probo/values-test.yaml --show-only templates/deployment.yaml
 ```
 
 ### 3. View Generated Config File
@@ -39,7 +39,7 @@ helm template my-probo ./charts/probo -f probo/values-test.yaml --show-only temp
 Check the generated `/etc/probod/config.yml`:
 
 ```bash
-helm template my-probo ./charts/probo -f probo/values-test.yaml \
+helm template my-probo ./charts/probo -f ./charts/probo/values-test.yaml \
   --show-only templates/configmap.yaml | grep -A 100 "config.yml:"
 ```
 
@@ -53,7 +53,7 @@ kubectl create namespace probo-test
 
 # Install chart
 helm install my-probo ./charts/probo \
-  -f probo/values-test.yaml \
+  -f ./charts/probo/values-test.yaml \
   --namespace probo-test
 
 # Check installation status
@@ -76,12 +76,12 @@ Test upgrading the chart:
 ```bash
 # Make changes to values or templates, then:
 helm upgrade my-probo ./charts/probo \
-  -f probo/values-test.yaml \
+  -f ./charts/probo/values-test.yaml \
   --namespace probo-test
 
 # Or use upgrade with install flag
 helm upgrade --install my-probo ./charts/probo \
-  -f probo/values-test.yaml \
+  -f ./charts/probo/values-test.yaml \
   --namespace probo-test
 ```
 
@@ -95,7 +95,7 @@ helm plugin install https://github.com/databus23/helm-diff
 
 # Show diff
 helm diff upgrade my-probo ./charts/probo \
-  -f probo/values-test.yaml \
+  -f ./charts/probo/values-test.yaml \
   --namespace probo-test
 ```
 
@@ -106,19 +106,19 @@ Override specific values for testing:
 ```bash
 # Enable persistence
 helm template my-probo ./charts/probo \
-  -f probo/values-test.yaml \
+  -f ./charts/probo/values-test.yaml \
   --set persistence.enabled=true \
   --set persistence.size=5Gi
 
 # Disable Chrome
 helm template my-probo ./charts/probo \
-  -f probo/values-test.yaml \
+  -f ./charts/probo/values-test.yaml \
   --set chrome.enabled=false \
   --set chrome.external.addr="external-chrome:9222"
 
 # Enable tracing
 helm template my-probo ./charts/probo \
-  -f probo/values-test.yaml \
+  -f ./charts/probo/values-test.yaml \
   --set probo.tracing.enabled=true \
   --set probo.tracing.addr="tempo:4317"
 ```
@@ -139,7 +139,7 @@ Install from the packaged chart:
 
 ```bash
 helm install my-probo probo-0.1.0.tgz \
-  -f probo/values-test.yaml \
+  -f ./charts/probo/values-test.yaml \
   --namespace probo-test
 ```
 
@@ -159,13 +159,13 @@ kubectl delete namespace probo-test
 ```bash
 # With persistence enabled
 helm template test-pvc ./charts/probo \
-  -f probo/values-test.yaml \
+  -f ./charts/probo/values-test.yaml \
   --set persistence.enabled=true \
   --show-only templates/pvc.yaml
 
 # With existing claim
 helm template test-pvc ./charts/probo \
-  -f probo/values-test.yaml \
+  -f ./charts/probo/values-test.yaml \
   --set persistence.enabled=true \
   --set persistence.existingClaim="my-existing-pvc" \
   --show-only templates/pvc.yaml
@@ -175,7 +175,7 @@ helm template test-pvc ./charts/probo \
 
 ```bash
 helm template test-ingress ./charts/probo \
-  -f probo/values-test.yaml \
+  -f ./charts/probo/values-test.yaml \
   --set ingress.enabled=true \
   --set ingress.className=nginx \
   --set ingress.hosts[0].host=probo.example.com \
@@ -186,7 +186,7 @@ helm template test-ingress ./charts/probo \
 
 ```bash
 helm template test-hpa ./charts/probo \
-  -f probo/values-test.yaml \
+  -f ./charts/probo/values-test.yaml \
   --set autoscaling.enabled=true \
   --set autoscaling.minReplicas=2 \
   --set autoscaling.maxReplicas=5 \
@@ -197,7 +197,7 @@ helm template test-hpa ./charts/probo \
 
 ```bash
 helm template test-metrics ./charts/probo \
-  -f probo/values-test.yaml \
+  -f ./charts/probo/values-test.yaml \
   --set metrics.serviceMonitor.enabled=true \
   --show-only templates/servicemonitor.yaml
 ```
@@ -207,7 +207,7 @@ helm template test-metrics ./charts/probo \
 ```bash
 # Full dry-run with all templates
 cd /Users/thomas/Projets/Probo/probo-helm-charts/charts
-helm template my-probo ./charts/probo -f probo/values-test.yaml > /tmp/probo-manifests.yaml
+helm template my-probo ./charts/probo -f ./charts/probo/values-test.yaml > /tmp/probo-manifests.yaml
 
 # View the generated manifests
 cat /tmp/probo-manifests.yaml
@@ -216,7 +216,7 @@ cat /tmp/probo-manifests.yaml
 grep -c "^kind:" /tmp/probo-manifests.yaml
 
 # Install for real testing
-helm install my-probo ./charts/probo -f probo/values-test.yaml -n probo-test --create-namespace
+helm install my-probo ./charts/probo -f ./charts/probo/values-test.yaml -n probo-test --create-namespace
 
 # Watch pod startup
 kubectl get pods -n probo-test -w
@@ -257,7 +257,7 @@ helm lint probo --debug
 
 ```bash
 # Add --debug flag to see detailed errors
-helm template my-probo ./charts/probo -f probo/values-test.yaml --debug
+helm template my-probo ./charts/probo -f ./charts/probo/values-test.yaml --debug
 ```
 
 ### Missing required values
