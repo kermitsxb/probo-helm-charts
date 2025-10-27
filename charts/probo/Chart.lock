@@ -2,5 +2,8 @@ dependencies:
 - name: minio
   repository: https://charts.min.io/
   version: 5.4.0
-digest: sha256:c51c40c38410fc75311e6455a76fd6961e8063e24ea574092e5fabe7f1064c49
-generated: "2025-10-22T15:14:13.652673+02:00"
+- name: ingress-nginx
+  repository: https://kubernetes.github.io/ingress-nginx
+  version: 4.10.0
+digest: sha256:1b26e5e0102d33c05f76d889afedc1d2b25ba89cc457d1a47b14ea4c136ac725
+generated: "2025-10-23T10:55:46.808949+02:00"

@@ -55,10 +55,17 @@ service:
   # loadBalancerSourceRanges: []
   annotations: {}
 
+ingress-nginx:
+  controller:
+    service:
+      type: LoadBalancer
+
 ingress:
-  enabled: false
-  className: ""
-  annotations: {}
+  enabled: true
+  className: "nginx"
+  annotations: {
+    kubernetes.io/ingress.class: nginx
+  }
     # cert-manager.io/cluster-issuer: letsencrypt-prod
     # nginx.ingress.kubernetes.io/ssl-redirect: "true"
   hosts:
@@ -177,6 +184,7 @@ probo:
   cors:
     allowedOrigins:
       - "https://probo.example.com"
+      - "http://probo.example.com"
 
   # Extra HTTP headers to add to responses
   extraHeaderFields: {}
@@ -214,10 +222,15 @@ probo:
     senderName: "Probo"
     senderEmail: "no-reply@notification.getprobo.com"
     smtp:
-      addr: "localhost:1025"
-      user: ""
-      password: ""
-      tlsRequired: false
+      addr: "sandbox.smtp.mailtrap.io:2525"
+      user: "2d1b1d0e8b3d0b"
+      password: "25a8eb11e75e8d"
+      tlsRequired: true
+#    smtp:
+#      addr: "localhost:1025"
+#      user: ""
+#      password: ""
+#      tlsRequired: false
 
   # OpenAI integration (optional)
   openai:
@@ -232,6 +245,7 @@ probo:
     provisionInterval: 30
     cnameTarget: "probo.example.com"
     acme:
+      port: 80443
       directory: "https://acme-v02.api.letsencrypt.org/directory"
       email: "admin@example.com"
       keyType: "EC256"
@@ -257,7 +271,7 @@ postgresql:
   resources:
     limits:
       memory: "2Gi"
-      ephemeral-storage: "50Gi"
+      ephemeral-storage: "5Gi"
   auth:
     postgresUser: probod
     postgresPassword: probod

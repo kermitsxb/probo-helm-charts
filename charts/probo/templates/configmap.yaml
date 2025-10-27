@@ -20,7 +20,7 @@ data:
 
     probod:
       hostname: {{ .Values.probo.hostname | quote }}
-      encryption-key-from-env: "ENCRYPTION_KEY"
+      encryption-key: {{ .Values.probo.encryptionKey | quote }}
       chrome-dp-addr: {{ include "probo.chrome.addr" . | quote }}
 
       api:
@@ -50,10 +50,10 @@ data:
         cookie:
           name: {{ .Values.probo.auth.cookieName | quote }}
           domain: {{ .Values.probo.auth.cookieDomain | quote }}
-          secret-from-env: "COOKIE_SECRET"
+          secret: {{ .Values.probo.auth.cookieSecret | quote }}
           duration: {{ .Values.probo.auth.cookieDuration }}
         password:
-          pepper-from-env: "PASSWORD_PEPPER"
+          pepper: {{ .Values.probo.auth.passwordPepper | quote }}
           iterations: {{ .Values.probo.auth.passwordIterations }}
 
       trust-auth:
@@ -62,15 +62,15 @@ data:
         cookie-duration: {{ .Values.probo.trustAuth.cookieDuration }}
         token-duration: {{ .Values.probo.trustAuth.tokenDuration }}
         report-url-duration: {{ .Values.probo.trustAuth.reportUrlDuration }}
-        token-secret-from-env: "TRUST_TOKEN_SECRET"
+        token-secret: {{ .Values.probo.trustAuth.tokenSecret | quote }}
         scope: {{ .Values.probo.trustAuth.scope | quote }}
         token-type: {{ .Values.probo.trustAuth.tokenType | quote }}
 
       aws:
         region: {{ .Values.s3.region | quote }}
         bucket: {{ .Values.s3.bucket | quote }}
-        access-key-id-from-env: "S3_ACCESS_KEY"
-        secret-access-key-from-env: "S3_SECRET_KEY"
+        access-key-id: {{ .Values.s3.accessKey | quote }}
+        secret-access-key: {{ .Values.s3.secretKey | quote }}
         {{- $s3Endpoint := include "probo.s3.endpoint" . }}
         {{- if $s3Endpoint }}
         endpoint: {{ $s3Endpoint | quote }}
@@ -82,10 +82,10 @@ data:
         smtp:
           addr: {{ .Values.probo.mailer.smtp.addr | quote }}
           {{- if .Values.probo.mailer.smtp.user }}
-          user-from-env: "SMTP_USER"
+          user: {{ .Values.probo.mailer.smtp.user | quote }}
           {{- end }}
           {{- if .Values.probo.mailer.smtp.password }}
-          password-from-env: "SMTP_PASSWORD"
+          password: {{ .Values.probo.mailer.smtp.password | quote }}
           {{- end }}
           tls-required: {{ .Values.probo.mailer.smtp.tlsRequired }}
 

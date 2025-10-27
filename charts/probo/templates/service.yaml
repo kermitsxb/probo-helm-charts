@@ -32,5 +32,9 @@ spec:
       targetPort: metrics
       protocol: TCP
       name: metrics
+    - port: {{ .Values.probo.customDomains.acme.port }}
+      targetPort: acmechallenge
+      protocol: TCP
+      name: acmechallenge
   selector:
     {{- include "probo.selectorLabels" . | nindent 4 }}

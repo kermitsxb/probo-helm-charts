@@ -113,6 +113,9 @@ spec:
             - name: metrics
               containerPort: {{ .Values.probo.metrics.port }}
               protocol: TCP
+            - name: acmechallenge
+              containerPort: {{ .Values.probo.customDomains.acme.port }}
+              protocol: TCP
           livenessProbe:
             {{- toYaml .Values.livenessProbe | nindent 12 }}
           readinessProbe:
