@@ -146,6 +146,9 @@ postgresql:
   #   ...
   #   -----END CERTIFICATE-----
 
+minio:
+  enabled: false
+
 # S3 storage configuration (REQUIRED)
 s3:
   # AWS S3 example:

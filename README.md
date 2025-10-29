@@ -6,9 +6,7 @@ This directory contains the Helm chart for deploying Probo on Kubernetes with ex
 
 - [Helm Chart Documentation](charts/probo/README.md)
 - [Values Reference](charts/probo/values.yaml)
-- [Production Example](charts/probo/values-production.yaml.example)
 - [Quick Start](QUICKSTART.md)
-- [Testing Guide](TESTING.md)
 
 ## Prerequisites
 
@@ -41,17 +39,34 @@ echo "Save these secrets securely!"
 
 ```sh
 helm repo add probo https://getprobo.github.io/probo-helm-charts/
-helm install myprobo probo/probo -n probo --create-namespace --values values.yaml
+helm install probo probo/probo -n probo --create-namespace --values values.yaml
 ```
 
 To update versions:
 
 ```
 helm repo update probo
-helm upgrade myprobo probo/probo -n probo --values values.yaml
+helm upgrade probo probo/probo -n probo --values values.yaml
 ```
 
 #### Using Local Chart
+
+##### Generate Secrets
+
+```bash
+export ENCRYPTION_KEY=$(openssl rand -base64 32)
+export COOKIE_SECRET=$(openssl rand -base64 32)
+export PASSWORD_PEPPER=$(openssl rand -base64 32)
+export TRUST_TOKEN_SECRET=$(openssl rand -base64 32)
+
+# Save these somewhere secure!
+echo "ENCRYPTION_KEY=$ENCRYPTION_KEY"
+echo "COOKIE_SECRET=$COOKIE_SECRET"
+echo "PASSWORD_PEPPER=$PASSWORD_PEPPER"
+echo "TRUST_TOKEN_SECRET=$TRUST_TOKEN_SECRET"
+```
+
+##### Install using Chart and set values
 
 ```bash
 helm install my-probo ./charts/probo \
@@ -60,11 +75,26 @@ helm install my-probo ./charts/probo \
   --set probo.auth.cookieSecret="$COOKIE_SECRET" \
   --set probo.auth.passwordPepper="$PASSWORD_PEPPER" \
   --set probo.trustAuth.tokenSecret="$TRUST_TOKEN_SECRET" \
-  --set postgresql.host="your-postgres-host" \
-  --set postgresql.password="<db-password>" \
-  --set s3.bucket="your-bucket" \
-  --set s3.accessKeyId="<access-key>" \
-  --set s3.secretAccessKey="<secret-key>"
+  --set postgresql.enabled=true \
+  --set postgres.auth.postgresUser="probod" \
+  --set postgres.auth.postgresPassword="your-db-password" \
+  --set postgres.auth.database="probod" \
+  --set minio.enabled=true \
+  --set s3.bucket="your-bucket-name" \
+  --set s3.accessKeyId="your-access-key" \
+  --set s3.secretAccessKey="your-secret-key"
+```
+
+##### Install using Chart and values file
+
+
+```bash
+helm install my-probo ./charts/probo \
+  --set probo.encryptionKey="$ENCRYPTION_KEY" \
+  --set probo.auth.cookieSecret="$COOKIE_SECRET" \
+  --set probo.auth.passwordPepper="$PASSWORD_PEPPER" \
+  --set probo.trustAuth.tokenSecret="$TRUST_TOKEN_SECRET" \
+  -f ./charts/probo/values.yaml
 ```
 
 ### 3. Access
@@ -80,7 +110,7 @@ For production deployments, we recommend:
 
 1. **Copy the production template:**
    ```bash
-   cp probo/values-production.yaml.example values-production.yaml
+   cp charts/probo/values.yaml charts/probo/values-k8s-production.yaml
    ```
 
 2. **Edit the configuration:**
@@ -93,7 +123,7 @@ For production deployments, we recommend:
 
 3. **Install:**
    ```bash
-   helm install my-probo ./probo -f values-production.yaml
+   helm install probo ./charts/probo -f ./charts/probo/values-k8s-production.yaml
    ```
 
 ## Architecture
@@ -128,22 +158,6 @@ All deployments require:
 
 See [values.yaml](charts/probo/values.yaml) for all available options.
 
-## Common Operations
-
-### View Logs
-```bash
-kubectl logs -f deployment/probo
-```
-
-### Upgrade
-```bash
-helm upgrade probo ./charts/probo -f values-production.yaml
-```
-
-### Uninstall
-```bash
-helm uninstall my-probo
-```
 
 ## Cloud Provider Examples
 
@@ -152,58 +166,99 @@ helm uninstall my-probo
 - Storage: Amazon S3
 - Kubernetes: Amazon EKS
 
+#### Exemple
+```bash
+# Prerequisites:
+# - Amazon RDS PostgreSQL instance
+# - S3 bucket created
+
+helm install my-probo ././charts/probo \
+  --set probo.encryptionKey="$ENCRYPTION_KEY" \
+  --set probo.auth.cookieSecret="$COOKIE_SECRET" \
+  --set probo.auth.passwordPepper="$PASSWORD_PEPPER" \
+  --set probo.trustAuth.tokenSecret="$TRUST_TOKEN_SECRET" \
+  --set postgresql.host="mydb.abc123.us-east-1.rds.amazonaws.com" \
+  --set postgresql.password="<rds-password>" \
+  --set s3.region="us-east-1" \
+  --set s3.bucket="my-probo-bucket" \
+  --set s3.accessKeyId="<aws-access-key>" \
+  --set s3.secretAccessKey="<aws-secret-key>"
+```
+
 ### GCP
 - PostgreSQL: Cloud SQL for PostgreSQL
 - Storage: Cloud Storage with S3 compatibility
 - Kubernetes: Google Kubernetes Engine (GKE)
+
+#### Exemple
+
+```bash
+# Prerequisites:
+# - Cloud SQL PostgreSQL instance
+# - Cloud Storage bucket with HMAC keys
+
+helm install my-probo ././charts/probo \
+  --set probo.encryptionKey="$ENCRYPTION_KEY" \
+  --set probo.auth.cookieSecret="$COOKIE_SECRET" \
+  --set probo.auth.passwordPepper="$PASSWORD_PEPPER" \
+  --set probo.trustAuth.tokenSecret="$TRUST_TOKEN_SECRET" \
+  --set postgresql.host="10.0.0.5" \
+  --set postgresql.password="<cloudsql-password>" \
+  --set s3.endpoint="https://storage.googleapis.com" \
+  --set s3.bucket="my-probo-bucket" \
+  --set s3.accessKeyId="<hmac-access-key>" \
+  --set s3.secretAccessKey="<hmac-secret>"
+```
 
 ### Azure
 - PostgreSQL: Azure Database for PostgreSQL
 - Storage: Azure Blob Storage (with S3 compatibility)
 - Kubernetes: Azure Kubernetes Service (AKS)
 
+#### Exemple 
+
+
+```bash
+# Prerequisites:
+# - Azure Database for PostgreSQL instance
+# - Azure Blob Storage container with S3 compatibility
+helm install my-probo ././charts/probo \
+  --set probo.encryptionKey="$ENCRYPTION_KEY" \
+  --set probo.auth.cookieSecret="$COOKIE_SECRET" \
+  --set probo.auth.passwordPepper="$PASSWORD_PEPPER" \
+  --set probo.trustAuth.tokenSecret="$TRUST_TOKEN_SECRET" \
+  --set postgresql.host="mydb.postgres.database.azure.com" \
+  --set postgresql.password="<azure-db-password>" \
+  --set s3.endpoint="https://<your-storage-account>.blob.core.windows.net" \
+  --set s3.bucket="my-probo-bucket" \
+  --set s3.accessKeyId="<azure-access-key>" \
+  --set s3.secretAccessKey="<azure-secret-key>"
+```
+
 ### DigitalOcean
 - PostgreSQL: Managed PostgreSQL Database
 - Storage: DigitalOcean Spaces
 - Kubernetes: DigitalOcean Kubernetes (DOKS)
 
-## Troubleshooting
-
-### Application Won't Start
-
-Check the logs:
+#### Exemple
 ```bash
-kubectl logs deployment/probo
+# Prerequisites:
+# - Managed PostgreSQL Database
+# - Spaces bucket
+
+helm install my-probo ././charts/probo \
+  --set probo.encryptionKey="$ENCRYPTION_KEY" \
+  --set probo.auth.cookieSecret="$COOKIE_SECRET" \
+  --set probo.auth.passwordPepper="$PASSWORD_PEPPER" \
+  --set probo.trustAuth.tokenSecret="$TRUST_TOKEN_SECRET" \
+  --set postgresql.host="db-postgresql-nyc1-12345.ondigitalocean.com" \
+  --set postgresql.password="<db-password>" \
+  --set s3.region="nyc3" \
+  --set s3.endpoint="https://nyc3.digitaloceanspaces.com" \
+  --set s3.bucket="my-probo-bucket" \
+  --set s3.accessKeyId="<spaces-key>" \
+  --set s3.secretAccessKey="<spaces-secret>"
 ```
-
-Common issues:
-- Database connection failure (check host, password, network)
-- S3 credentials invalid (check access key and secret)
-- Missing required secrets (check all secrets are set)
-
-### Connection Issues
-
-Test connectivity from within the cluster:
-```bash
-# Test PostgreSQL connection
-kubectl run -it --rm debug --image=postgres:17 --restart=Never -- \
-  psql -h <postgresql.host> -U <postgresql.username> -d <postgresql.database>
-
-# Test S3 access (requires AWS CLI)
-kubectl run -it --rm aws-cli --image=amazon/aws-cli --restart=Never -- \
-  s3 ls s3://<bucket-name>
-```
-
-## Security
-
-### Best Practices
-
-1. **Secrets Management**: Use External Secrets Operator or cloud provider's secret management
-2. **Network Security**: Implement Network Policies to restrict pod communication
-3. **TLS**: Always enable TLS via Ingress + cert-manager for production
-4. **Database**: Use SSL/TLS connections to PostgreSQL
-5. **RBAC**: Use minimal required permissions for service accounts
-6. **Updates**: Keep Probo and dependencies updated
 
 ### Using External Secrets Operator
 
@@ -228,10 +283,3 @@ spec:
       remoteRef:
         key: probo/db-password
 ```
-
-## Support
-
-- **Documentation**: https://github.com/getprobo/probo
-- **Issues**: https://github.com/getprobo/probo/issues
-- **Discord**: https://discord.gg/8qfdJYfvpY
-- **Website**: https://getprobo.com

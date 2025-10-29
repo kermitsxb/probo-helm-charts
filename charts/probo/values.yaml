@@ -56,6 +56,8 @@ service:
   annotations: {}
 
 ingress-nginx:
+  name: ingress-nginx
+  enabled: true
   controller:
     service:
       type: LoadBalancer
@@ -245,7 +247,7 @@ probo:
     provisionInterval: 30
     cnameTarget: "probo.example.com"
     acme:
-      port: 80443
+      port: 8443
       directory: "https://acme-v02.api.letsencrypt.org/directory"
       email: "admin@example.com"
       keyType: "EC256"

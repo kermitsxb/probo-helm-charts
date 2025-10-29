@@ -26,7 +26,7 @@ echo "Save these secrets securely!"
 ### Install
 
 ```bash
-helm install my-probo ././charts/probo \
+helm install probo . \
   --set probo.hostname="probo.example.com" \
   --set probo.encryptionKey="$ENCRYPTION_KEY" \
   --set probo.auth.cookieSecret="$COOKIE_SECRET" \
@@ -106,7 +106,7 @@ autoscaling:
 Install with:
 
 ```bash
-helm install my-probo ././charts/probo -f values-production.yaml
+helm install probo . -f values-production.yaml
 ```
 
 ## Configuration
@@ -173,13 +173,13 @@ Use your PostgreSQL provider's backup solution (e.g., AWS RDS automated backups,
 ## Upgrading
 
 ```bash
-helm upgrade probo ././charts/probo -f values-production.yaml
+helm upgrade probo . -f values-production.yaml
 ```
 
 ## Uninstalling
 
 ```bash
-helm uninstall my-probo
+helm uninstall probo
 ```
 
 **Note:** This does not delete your external PostgreSQL database or S3 bucket.
@@ -265,22 +265,3 @@ chrome:
   external:
     addr: "chrome.browserless.io:3000"
 ```
-
-## Security Best Practices
-
-1. **Use External Secrets**: Integrate with External Secrets Operator, Sealed Secrets, or cloud provider secret management
-2. **Enable TLS**: Always use HTTPS in production via Ingress + cert-manager
-3. **Network Policies**: Implement Kubernetes Network Policies to restrict traffic
-4. **Database Encryption**: Use encrypted connections to PostgreSQL (set `postgresql.caCertBundle` if needed)
-5. **Regular Updates**: Keep the Probo image updated with security patches
-6. **RBAC**: Use minimal service account permissions
-
-## Support
-
-- GitHub: https://github.com/getprobo/probo
-- Discord: https://discord.gg/8qfdJYfvpY
-- Website: https://getprobo.com
-
-## License
-
-MIT License - see the [LICENSE](../../../LICENSE) file for details.
