@@ -311,7 +311,6 @@ spec:
 | securityContext.readOnlyRootFilesystem        | bool    | `false`                                            | Mount root filesystem as read-only (/data directory requires write access)                          |
 | service.type                                  | string  | `"ClusterIP"`                                      | Kubernetes service type                                                                             |
 | service.port                                  | int     | `8080`                                             | Service port                                                                                        |
-| service.securedPort                            | int     | `443`                                              | Service secure port                                                                                 |
 | service.annotations                           | object  | `{}`                                               | Annotations for the service                                                                         |
 | ingress-nginx.name                            | string  | `"ingress-nginx"`                                  | Name of the ingress-nginx subchart                                                                  |
 | ingress-nginx.enabled                         | bool    | `true`                                             | Enable included ingress-nginx controller                                                            |
@@ -359,7 +358,6 @@ spec:
 | probo.hostname                                | string  | `"probo.example.com"`                              | Public hostname where Probo will be accessible                                                      |
 | probo.encryptionKey                           | string  | `""`                                               | **REQUIRED** Base64-encoded encryption key (generate with: openssl rand -base64 32)                 |
 | probo.service.port                            | int     | `8080`                                             | Probo application service port                                                                      |
-| probo.service.securedPort                      | int     | `443`                                              | Probo application service secured port                                                              |
 | probo.metrics.port                            | int     | `8081`                                             | Probo metrics service port                                                                          |
 | probo.tracing.enabled                         | bool    | `false`                                            | Enable OpenTelemetry tracing                                                                        |
 | probo.tracing.addr                            | string  | `""`                                               | OTLP gRPC endpoint (e.g., tempo:4317)                                                               |

@@ -213,6 +213,9 @@ probo:
     cookieDuration: 24
     tokenDuration: 168
     reportUrlDuration: 15
+    ports:
+      httpChallenge: 80
+      tlsHttpServer: 443
     # Trust token signing secret (REQUIRED, at least 32 bytes)
     # Generate with: openssl rand -base64 32
     tokenSecret: ""
