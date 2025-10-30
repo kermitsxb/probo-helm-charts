@@ -21,10 +21,18 @@ spec:
     {{- toYaml .Values.service.loadBalancerSourceRanges | nindent 4 }}
   {{- end }}
   ports:
-    - port: {{ .Values.service.port }}
+    - port: {{ .Values.service.httpPort }}
       targetPort: http
       protocol: TCP
       name: http
+    - port: {{ .Values.service.httpsPort }}
+      targetPort: https
+      protocol: TCP
+      name: https
+    - port: {{ .Values.service.port }}
+      targetPort: backoffice
+      protocol: TCP
+      name: backoffice
       {{- if and (eq .Values.service.type "NodePort") .Values.service.nodePort }}
       nodePort: {{ .Values.service.nodePort }}
       {{- end }}
@@ -32,9 +40,5 @@ spec:
       targetPort: metrics
       protocol: TCP
       name: metrics
-    - port: {{ .Values.probo.customDomains.acme.port }}
-      targetPort: acmechallenge
-      protocol: TCP
-      name: acmechallenge
   selector:
     {{- include "probo.selectorLabels" . | nindent 4 }}

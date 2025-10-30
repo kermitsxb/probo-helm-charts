@@ -108,13 +108,16 @@ spec:
             {{- end }}
           ports:
             - name: http
-              containerPort: {{ .Values.probo.service.port }}
+              containerPort: {{ .Values.service.httpPort }}
+              protocol: TCP
+            - name: https
+              containerPort: {{ .Values.service.httpsPort }}
+              protocol: TCP
+            - name: backoffice
+              containerPort: {{ .Values.service.port }}
               protocol: TCP
             - name: metrics
               containerPort: {{ .Values.probo.metrics.port }}
-              protocol: TCP
-            - name: acmechallenge
-              containerPort: {{ .Values.probo.customDomains.acme.port }}
               protocol: TCP
           livenessProbe:
             {{- toYaml .Values.livenessProbe | nindent 12 }}

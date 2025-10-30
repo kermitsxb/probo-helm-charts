@@ -2,13 +2,14 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "probo.fullname" . }}
+  name: {{ include "probo.fullname" . }}-http
   labels:
     {{- include "probo.labels" . | nindent 4 }}
-  {{- with .Values.ingress.annotations }}
   annotations:
+    kubernetes.io/ingress.class: haproxy
+    {{- with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
-  {{- end }}
+    {{- end }}
 spec:
   {{- if .Values.ingress.className }}
   ingressClassName: {{ .Values.ingress.className }}

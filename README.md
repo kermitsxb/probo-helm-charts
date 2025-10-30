@@ -132,7 +132,8 @@ For production deployments, we recommend:
 
 - **Probo Application** - Main Go binary serving GraphQL APIs and React frontends
 - **Chrome Headless** - For PDF generation (optional, can use external service)
-- **Ingress** - For external access with TLS (optional)
+- **LoadBalancer Service** - For external access via TCP on ports 80, 443, and 8080
+- **Ingress** - Alternative to LoadBalancer for HTTP routing (optional)
 
 ### External Dependencies (Required)
 
@@ -140,6 +141,41 @@ For production deployments, we recommend:
 - **S3 Storage** - Object storage for files and documents
 
 The chart is designed to work with managed cloud services, ensuring reliability and scalability.
+
+### Deployment Mode: HAProxy Ingress (Default)
+
+The default configuration uses HAProxy Ingress controller which provides both Layer 4 (TCP passthrough) and Layer 7 (HTTP routing) capabilities.
+
+**Architecture:**
+
+```
+Client
+  ↓
+HAProxy Ingress LoadBalancer
+  ├─ Port 80 (TCP Layer 4 passthrough) → probo:80
+  ├─ Port 443 (TCP Layer 4 passthrough) → probo:443
+  └─ HTTP probo.example.com (Layer 7 routing) → probo:8080
+```
+
+**How it works:**
+
+1. **HAProxy Ingress Controller** runs in the release namespace with a LoadBalancer service
+2. **TCP ConfigMap** defines Layer 4 TCP passthrough rules:
+   - Port 80 → Probo service port 80
+   - Port 443 → Probo service port 443
+3. **HTTP Ingress** defines Layer 7 HTTP routing:
+   - Host `probo.example.com` → Probo service port 8080
+
+**Benefits:**
+- Single LoadBalancer for both TCP and HTTP traffic
+- TCP passthrough for ports 80/443 (Probo handles TLS directly)
+- HTTP routing for backoffice on port 8080
+- Supports ACME/Let's Encrypt integration
+
+**Port Configuration:**
+- **Port 80** - TCP passthrough to Probo:80 (HTTP service, ACME challenges)
+- **Port 443** - TCP passthrough to Probo:443 (HTTPS service with TLS)
+- **Port 8080** - HTTP routing to Probo:8080 (Backoffice, via host-based routing)
 
 ## Configuration
 

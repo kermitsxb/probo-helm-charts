@@ -24,7 +24,9 @@ data:
       chrome-dp-addr: {{ include "probo.chrome.addr" . | quote }}
 
       api:
-        addr: "0.0.0.0:{{ .Values.probo.service.port }}"
+        addr: "0.0.0.0:{{ .Values.service.httpPort }}"
+        secured-addr: "0.0.0.0:{{ .Values.service.httpsPort }}"
+        backoffice-addr: "0.0.0.0:{{ .Values.service.port }}"
         cors:
           allowed-origins:
             {{- toYaml .Values.probo.cors.allowedOrigins | nindent 12 }}
@@ -62,6 +64,11 @@ data:
         cookie-duration: {{ .Values.probo.trustAuth.cookieDuration }}
         token-duration: {{ .Values.probo.trustAuth.tokenDuration }}
         report-url-duration: {{ .Values.probo.trustAuth.reportUrlDuration }}
+        {{- if .Values.probo.trustAuth.ports }}
+        ports:
+          http-challenge: {{ .Values.probo.trustAuth.ports.httpChallenge }}
+          tls-http-server: {{ .Values.probo.trustAuth.ports.tlsHttpServer }}
+        {{- end }}
         token-secret: {{ .Values.probo.trustAuth.tokenSecret | quote }}
         scope: {{ .Values.probo.trustAuth.scope | quote }}
         token-type: {{ .Values.probo.trustAuth.tokenType | quote }}
