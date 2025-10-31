@@ -2,8 +2,8 @@ dependencies:
 - name: minio
   repository: https://charts.min.io/
   version: 5.4.0
-- name: haproxy-ingress
-  repository: https://haproxy-ingress.github.io/charts
-  version: 0.14.7
-digest: sha256:72f7d6adcfa5b70ced2bdf95bcab23c476794fd7d91c594cc642fa922ec7241c
-generated: "2025-10-30T15:09:03.252668+01:00"
+- name: kubernetes-ingress
+  repository: https://haproxytech.github.io/helm-charts
+  version: 1.45.1
+digest: sha256:86861ee988df3673c6306ff42719f09d12ce22e2d48a0db757ad4365d204bd85
+generated: "2025-10-31T10:17:36.108938+01:00"

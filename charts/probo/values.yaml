@@ -70,7 +70,7 @@ haproxy-ingress:
       type: LoadBalancer
       annotations: {}
     extraArgs:
-      tcp-services-configmap: "$(POD_NAMESPACE)/haproxy-tcp-services"
+      - --tcp-services-configmap=$(POD_NAMESPACE)/haproxy-tcp-services
     config:
       # HAProxy Ingress global config
       ssl-redirect: "false"

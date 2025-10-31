@@ -355,7 +355,7 @@ spec:
 | haproxy-ingress.controller.ingressClassResource.name | string | `"haproxy"`                                  | Name of the IngressClass resource                                                                   |
 | haproxy-ingress.controller.ingressClassResource.default | bool | `false`                                     | Set as default IngressClass                                                                         |
 | haproxy-ingress.controller.service.type       | string  | `"LoadBalancer"`                                   | HAProxy Ingress controller service type                                                             |
-| haproxy-ingress.controller.extraArgs.tcp-services-configmap | string | `"$(POD_NAMESPACE)/haproxy-tcp-services"` | ConfigMap for TCP passthrough services                                                              |
+| haproxy-ingress.controller.extraArgs | list | `["--tcp-services-configmap=$(POD_NAMESPACE)/haproxy-tcp-services"]` | Extra arguments for HAProxy controller |
 | haproxy-ingress.controller.config.ssl-redirect | string | `"false"`                                         | Disable automatic SSL redirect                                                                      |
 | ingress.enabled                               | bool    | `true`                                             | Enable ingress resource                                                                             |
 | ingress.className                             | string  | `"haproxy"`                                        | Ingress class name                                                                                  |

@@ -71,7 +71,7 @@ haproxy-ingress:
         # GCP example:
         # cloud.google.com/load-balancer-type: "External"
     extraArgs:
-      tcp-services-configmap: "$(POD_NAMESPACE)/haproxy-tcp-services"
+      - --tcp-services-configmap=$(POD_NAMESPACE)/haproxy-tcp-services
     config:
       ssl-redirect: "false"  # Probo handles SSL internally
 
