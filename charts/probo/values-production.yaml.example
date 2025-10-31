@@ -11,6 +11,30 @@ image:
 # Scale for high availability
 replicaCount: 3
 
+# Production security context (non-root user)
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000  # probo user (UID defined in Dockerfile)
+  runAsGroup: 1000
+  fsGroup: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: false  # /data directory requires write access
+  runAsUser: 1000
+  runAsGroup: 1000
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 8080
+  httpPort: 80
+  httpsPort: 443
+  annotations: {}
+
 # Production resource limits
 resources:
   limits:
@@ -28,15 +52,36 @@ autoscaling:
   targetCPUUtilizationPercentage: 70
   targetMemoryUtilizationPercentage: 80
 
+# HAProxy Ingress Controller configuration
+haproxy-ingress:
+  enabled: true
+  controller:
+    ingressClass: haproxy
+    ingressClassResource:
+      enabled: true
+      name: haproxy
+      default: false
+    name: controller
+    service:
+      type: LoadBalancer
+      annotations:
+        # Cloud provider annotations for LoadBalancer
+        # AWS example:
+        # service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+        # GCP example:
+        # cloud.google.com/load-balancer-type: "External"
+    extraArgs:
+      tcp-services-configmap: "$(POD_NAMESPACE)/haproxy-tcp-services"
+    config:
+      ssl-redirect: "false"  # Probo handles SSL internally
+
 # Configure ingress with TLS
 ingress:
   enabled: true
-  className: "nginx"
+  className: "haproxy"
   annotations:
+    kubernetes.io/ingress.class: haproxy
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
   hosts:
     - host: probo.example.com
       paths:
@@ -55,10 +100,20 @@ probo:
   # REQUIRED: Generate with: openssl rand -base64 32
   encryptionKey: "CHANGE_ME_ENCRYPTION_KEY"
 
+  service:
+    port: 8080
+
+  metrics:
+    port: 8081
+
   # CORS configuration - add all domains that will access the API
   cors:
     allowedOrigins:
       - "https://probo.example.com"
+
+  # Extra HTTP headers to add to responses
+  extraHeaderFields: {}
+    # X-Custom-Header: "custom-value"
 
   # Authentication
   auth:
@@ -73,9 +128,18 @@ probo:
 
   # Trust center authentication
   trustAuth:
+    cookieName: "TCT"
     cookieDomain: "example.com"
+    cookieDuration: 24
+    tokenDuration: 168
+    reportUrlDuration: 15
+    ports:
+      httpChallenge: 80
+      tlsHttpServer: 443
     # REQUIRED: Generate with: openssl rand -base64 32
     tokenSecret: "CHANGE_ME_TRUST_TOKEN_SECRET"
+    scope: "trust_center_readonly"
+    tokenType: "trust_center_access"
 
   # Email configuration
   mailer:
@@ -127,12 +191,17 @@ probo:
         token-url: "https://github.com/login/oauth/access_token"
 
 # PostgreSQL configuration (REQUIRED)
-# Use a managed PostgreSQL service
+# For production: Use external managed PostgreSQL (AWS RDS, GCP Cloud SQL, etc.)
+# Disable the included PostgreSQL chart
 postgresql:
+  # Disable the included PostgreSQL for production
+  enabled: false
+
+  # External PostgreSQL connection (configure these when enabled=false)
   # Examples:
-  # - AWS: mydb.abc123.us-east-1.rds.amazonaws.com
-  # - GCP: 10.0.0.5 (Cloud SQL private IP)
-  # - Azure: myserver.postgres.database.azure.com
+  # - AWS RDS: mydb.abc123.us-east-1.rds.amazonaws.com
+  # - GCP Cloud SQL: 10.0.0.5 (private IP)
+  # - Azure Database: myserver.postgres.database.azure.com
   # - DigitalOcean: db-postgresql-nyc1-12345.ondigitalocean.com
   host: "CHANGE_ME_POSTGRES_HOST"
   port: 5432
@@ -146,6 +215,8 @@ postgresql:
   #   ...
   #   -----END CERTIFICATE-----
 
+# MinIO configuration
+# Disable included MinIO for production - use external S3 instead
 minio:
   enabled: false
 
@@ -189,6 +260,16 @@ chrome:
   # To use external Chrome service instead, set enabled=false and configure:
   # external:
   #   addr: "chrome.browserless.io:3000"
+
+# Persistent data volume (optional)
+persistence:
+  enabled: true
+  # Use existing PVC or let Helm create one
+  # existingClaim: "probo-data-pvc"
+  storageClass: ""  # Use default storage class or specify one
+  accessMode: ReadWriteOnce
+  size: 50Gi
+  annotations: {}
 
 # Enable Prometheus monitoring
 metrics:
