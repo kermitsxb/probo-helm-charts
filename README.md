@@ -6,7 +6,6 @@ This directory contains the Helm chart for deploying Probo on Kubernetes with ex
 
 - [Helm Chart Documentation](charts/probo/README.md)
 - [Values Reference](charts/probo/values.yaml)
-- [Quick Start](QUICKSTART.md)
 
 ## Prerequisites
 
