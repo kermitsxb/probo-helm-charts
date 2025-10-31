@@ -338,7 +338,6 @@ spec:
 | podLabels                                     | object  | `{}`                                               | Labels to add to pods                                                                               |
 | podSecurityContext.runAsUser                  | int     | `0`                                                | User ID to run the container as (0 = root, change to 1000 for production)                           |
 | podSecurityContext.runAsGroup                 | int     | `0`                                                | Group ID to run the container as (0 = root, change to 1000 for production)                          |
-| podSecurityContext.privileged                 | bool    | `true`                                             | Run container in privileged mode (set to false for production)                                      |
 | securityContext.runAsUser                     | int     | `0`                                                | User ID for the security context                                                                    |
 | securityContext.runAsGroup                    | int     | `0`                                                | Group ID for the security context                                                                   |
 | securityContext.privileged                    | bool    | `true`                                             | Enable privileged mode for the container (set to false for production)                              |
