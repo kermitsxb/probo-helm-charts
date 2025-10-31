@@ -24,9 +24,7 @@ data:
       chrome-dp-addr: {{ include "probo.chrome.addr" . | quote }}
 
       api:
-        addr: "0.0.0.0:{{ .Values.service.httpPort }}"
-        secured-addr: "0.0.0.0:{{ .Values.service.httpsPort }}"
-        backoffice-addr: "0.0.0.0:{{ .Values.service.port }}"
+        addr: "0.0.0.0:{{ .Values.service.port }}"
         cors:
           allowed-origins:
             {{- toYaml .Values.probo.cors.allowedOrigins | nindent 12 }}

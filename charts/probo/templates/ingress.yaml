@@ -6,7 +6,6 @@ metadata:
   labels:
     {{- include "probo.labels" . | nindent 4 }}
   annotations:
-    kubernetes.io/ingress.class: haproxy
     {{- with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
